@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="stylesheet"  href="style.css" />
-<title>O.C.E.A.N Provisional Adjustments</title>
+<title>O.C.E.A.N Case Manager</title>
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 <header class="top">
@@ -118,6 +118,6 @@
     <section id="rules" class="view"><div class="card pad"><h2>Rules Engine</h2><div class="notice">Demo decision-support engine. The machine recommends; a human officer agrees or overrides. A real bank should have compliance/legal approve every rule.</div><table style="margin-top:14px"><tr><th>Area</th><th>Demo behavior</th></tr><tr><td>Context-aware queue</td><td>Dashboard/Review/New Case shows All/Reg E/Non Reg E queue. Manager Review shows manager-review cases. Audit Log shows audit-ready/final cases only.</td></tr><tr><td>Date filtering</td><td>Case queue and dashboard can be filtered by notice received date.</td></tr><tr><td>Audit search</td><td>Audit log uses dashboard-style search bars and requires opening a case to see event details.</td></tr><tr><td>Reg E coverage</td><td>Applies to EFTs that debit or credit a consumer account; checks and Fedwire/similar wire transfers route outside Reg E in this demo.</td></tr><tr><td>Case dates</td><td>Shows the four operational dates staff need: notice date, opened date, provisional credit deadline, and final case deadline.</td></tr><tr><td>Investigation timing</td><td>Uses 10 business days normally, 20 business days for new accounts, 45 calendar days extended, and 90 calendar days for POS/foreign/new account cases.</td></tr><tr><td>Retention</td><td>Audit-ready cases include a 2-year evidence-retention control.</td></tr></table></div></section>
   </main>
 </div>
-<script src="script.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
