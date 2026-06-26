@@ -209,7 +209,7 @@ function managerApprove(){let c=cur();if(!c.status.includes('Final')){alert('Man
 function renderManager(){let rows=applySort(cases.filter(isManagerCase).filter(matchesManager),managerSort,(c,f)=>f==='caseId'?c.id:c.noticeDate);let bar=document.getElementById('managerFilterBar');if(bar){bar.innerHTML='<div class="three"><div><label>Case</label><input placeholder="Search case #" value="'+managerFilters.caseId+'" oninput="setManagerFilter(\'caseId\',this.value)"></div><div><label>Customer</label><input placeholder="Search customer" value="'+managerFilters.customer+'" oninput="setManagerFilter(\'customer\',this.value)"></div><div><label>Account</label><input placeholder="Search account" value="'+managerFilters.account+'" oninput="setManagerFilter(\'account\',this.value)"></div></div><div class="two"><div><label>Total Claim Amount</label><input placeholder="Search amount" value="'+managerFilters.amount+'" oninput="setManagerFilter(\'amount\',this.value)"></div><div><label>Status / Final Decision</label><input placeholder="Search status or decision" value="'+managerFilters.status+'" oninput="setManagerFilter(\'status\',this.value)"></div>'}document.getElementById('managerTable').innerHTML='<tr><th>Case<button class="sortBtn" onclick="toggleManagerSort(\'caseId\')">'+sortArrow(managerSort,'caseId')+'</button></th><th>Customer</th><th>Account</th><th>Total Claim Amount</th><th>Notice Date<button class="sortBtn" onclick="toggleManagerSort(\'noticeDate\')">'+sortArrow(managerSort,'noticeDate')+'</button></th><th>Status / Final Decision</th><th>Credit Status</th><th>Manager</th><th>Audit</th><th>Action</th></tr>'+(rows.map(c=>'<tr style="cursor:pointer" title="Open case" onclick="selectCase(\''+c.id+'\')"><td>'+c.id+'</td><td>'+c.customer+'</td><td>'+c.account+'</td><td>'+money(c.amount)+'</td><td>'+c.noticeDate+'</td><td>'+(c.finalDecision||c.status)+'</td><td>'+c.creditStatus+'</td><td>'+(c.managerReviewed?'Reviewed':'Pending')+'</td><td>'+(c.auditReady?'Ready':'Not ready')+'</td><td><button class="secondary smallBtn" onclick="event.stopPropagation();selectCase(\''+c.id+'\')">Open</button></td></tr>').join('')||'<tr><td colspan="10">No manager review cases match your filters.</td></tr>')}
 function renderAudit(){let rows=applySort(cases.filter(isAuditCase).filter(matchesAudit),auditSort,(c,f)=>f==='caseId'?c.id:c.noticeDate);let table=document.getElementById('auditTable');if(!table)return;table.innerHTML='<tr><th>Case<button class="sortBtn" onclick="toggleAuditSort(\'caseId\')">'+sortArrow(auditSort,'caseId')+'</button><input class="filterInput" placeholder="Search case #" value="'+auditFilters.caseId+'" oninput="setAuditFilter(\'caseId\',this.value)"></th><th>Source<input class="filterInput" placeholder="Search source" value="'+auditFilters.source+'" oninput="setAuditFilter(\'source\',this.value)"></th><th>Customer<input class="filterInput" placeholder="Search customer" value="'+auditFilters.customer+'" oninput="setAuditFilter(\'customer\',this.value)"></th><th>Account Number<input class="filterInput" placeholder="Search account" value="'+auditFilters.account+'" oninput="setAuditFilter(\'account\',this.value)"></th><th>Case Type</th><th>Error Type</th><th>Status<input class="filterInput" placeholder="Search status" value="'+auditFilters.status+'" oninput="setAuditFilter(\'status\',this.value)"></th><th>Notice Date<button class="sortBtn" onclick="toggleAuditSort(\'noticeDate\')">'+sortArrow(auditSort,'noticeDate')+'</button></th><th>Action</th></tr>'+(rows.map(c=>{let calc=classify(c);return '<tr style="cursor:pointer" title="Open audit detail" onclick="openAuditCase(\''+c.id+'\')"><td>'+c.id+'</td><td>'+c.source+'</td><td>'+c.customer+'</td><td>'+c.account+'</td><td>'+caseTxnType(c)+'</td><td>'+caseClaimType(c)+'</td><td>'+badge(c)+'<div class="muted mini">'+(calc.likelyRegE?'Reg E':'Non Reg E')+'</div></td><td>'+c.noticeDate+'</td><td><button class="secondary smallBtn" onclick="event.stopPropagation();openAuditCase(\''+c.id+'\')">Open Audit</button></td></tr>'}).join('')||'<tr><td colspan="9">No audit cases match your search.</td></tr>')}
 function renderAuditDetail(){let c=cases.find(x=>x.id===selectedAuditId);let el=document.getElementById('auditDetailFull')||document.getElementById('auditDetail');if(!el)return;if(!c){el.innerHTML='<div class="notice auditDetail">Select a case from the audit table or audit queue to view detailed logs.</div>';return}let calc=classify(c);el.innerHTML='<div class="between"><div><h3>Audit Detail: '+c.id+' - '+c.customer+'</h3><p class="muted">Account: '+c.account+' - '+c.source+' - '+(calc.likelyRegE?'Reg E':'Non Reg E')+' - Notice: '+c.noticeDate+'</p></div><div class="row"><button class="secondary" onclick="startEditCase()">Manager Edit / Override</button><button class="secondary" onclick="activeView=\'audit\';selectedAuditId=null;document.querySelectorAll(\'.view\').forEach(v=>v.classList.remove(\'active\'));document.getElementById(\'audit\').classList.add(\'active\');render()">Back to Audit List</button></div></div>'+finderDatesHtml(c,calc)+'<table><tr><td>Status</td><td>'+c.status+'</td></tr><tr><td>Final decision</td><td>'+(c.finalDecision||'Pending')+'</td></tr><tr><td>Credit status</td><td>'+c.creditStatus+'</td></tr><tr><td>Manager reviewed</td><td>'+(c.managerReviewed?'Yes':'No')+'</td></tr><tr><td>Audit ready</td><td>'+(c.auditReady?'Yes':'No')+'</td></tr></table>'+flaggedTransactionsHtml(c)+creditLedgerHtml(c)+'<h4>Events</h4>'+c.events.map(e=>'<div class="event">'+e.text+'<div class="muted mini">'+e.time+'</div></div>').join('')+'<h4>Comments</h4>'+(c.comments.map(cm=>'<div class="comment"><strong>'+cm.author+'</strong>'+cm.text+'<div class="muted mini">'+cm.time+'</div>'+commentAttachmentsHtml(cm.attachments)+'</div>').join('')||'<p class="muted">No comments.</p>')}
-function resetNewCaseForm(){let c=document.getElementById('customer');if(c)c.value='New Demo Customer';let a=document.getElementById('account');if(a)a.value='5550001234';let n=document.getElementById('noticeDate');if(n)n.value='2026-06-22';let st=document.getElementById('statement');if(st)st.value='Customer says they did not authorize this transaction.';renderTransactionRows([defaultTransaction()]);setManualControls(null);liveCalc();}
+function resetNewCaseForm(){let c=document.getElementById('customer');if(c)c.value='New Demo Customer';let a=document.getElementById('account');if(a)a.value='111';let n=document.getElementById('noticeDate');if(n)n.value='2026-06-22';let st=document.getElementById('statement');if(st)st.value='Customer says they did not authorize this transaction.';renderTransactionRows([defaultTransaction()]);setManualControls(null);liveCalc();}
 function resetDemo(){if(confirm('Reset all demo cases?')){cases=JSON.parse(JSON.stringify(seed));selectedId=cases[0].id;selectedAuditId=null;editCaseId=null;queueFilter='all';dashboardFilters={caseId:'',source:'',customer:'',account:'',status:'',txnType:'',claimType:''};auditFilters={caseId:'',source:'',customer:'',account:'',status:'',txnType:'',claimType:''};ledgerFilters={caseId:'',customer:'',account:'',amount:''};managerFilters={caseId:'',customer:'',account:'',amount:'',status:''};queueSort={field:'noticeDate',direction:'desc'};dashboardSort={field:'noticeDate',direction:'desc'};auditSort={field:'noticeDate',direction:'desc'};managerSort={field:'noticeDate',direction:'desc'};ledgerSort={field:'date',direction:'desc'};save();render()}}
 /* V40 intake upgrade: account lookup, case-type workflow, and transaction selection from account history */
 const MOCK_ACCOUNTS={
@@ -237,6 +237,36 @@ const MOCK_ACCOUNTS={
     {date:'2026-06-14',type:'Check',merchant:'Local Contractor',amount:1200.00},
     {date:'2026-06-12',type:'Debit Card POS',merchant:'HOME SUPPLY WAREHOUSE',amount:88.01},
     {date:'2026-06-10',type:'Wire Transfer',merchant:'Domestic Wire Transfer',amount:2500.00}
+  ]},
+  '111':{customer:'Santiago S',accountAge:'Over 30 days',foreign:'No',deviceStatus:'Still in possession',prior:0,phone:'(305) 555-0111',email:'santiago.s@example.com',history:[
+    {date:'2026-06-23',type:'Zelle / P2P',merchant:'Zelle to Unknown Recipient',amount:375.00},
+    {date:'2026-06-22',type:'Zelle / P2P',merchant:'Zelle to Marketplace Seller',amount:150.00},
+    {date:'2026-06-21',type:'Debit Card POS',merchant:'OCEAN MART MIAMI',amount:42.18},
+    {date:'2026-06-20',type:'ACH Debit',merchant:'STREAMING ACH PAY',amount:19.99}
+  ]},
+  '222':{customer:'Bryce Lewis',accountAge:'New account under 30 days',foreign:'No',deviceStatus:'Unknown',prior:1,phone:'(305) 555-0222',email:'bryce.lewis@example.com',history:[
+    {date:'2026-06-23',type:'ACH Debit',merchant:'GYM MEMBERSHIP ACH',amount:89.50},
+    {date:'2026-06-22',type:'ACH Debit',merchant:'ONLINE LENDER ACH',amount:310.00},
+    {date:'2026-06-21',type:'ATM Withdrawal',merchant:'ATM BRICKELL',amount:200.00},
+    {date:'2026-06-20',type:'Debit Card POS',merchant:'FUEL STATION 81',amount:63.41}
+  ]},
+  '333':{customer:'Gian Castro',accountAge:'Over 30 days',foreign:'No',deviceStatus:'Lost',prior:2,phone:'(305) 555-0333',email:'gian.castro@example.com',history:[
+    {date:'2026-06-23',type:'ATM Withdrawal',merchant:'ATM DOWNTOWN MIAMI',amount:500.00},
+    {date:'2026-06-23',type:'ATM Withdrawal',merchant:'ATM DOWNTOWN MIAMI',amount:300.00},
+    {date:'2026-06-22',type:'Debit Card POS',merchant:'ELECTRONICS OUTLET',amount:740.22},
+    {date:'2026-06-20',type:'Online Banking Transfer',merchant:'Online transfer to external account',amount:650.00}
+  ]},
+  '444':{customer:'Pilar Marotta',accountAge:'Over 30 days',foreign:'Yes',deviceStatus:'Stolen',prior:0,phone:'(305) 555-0444',email:'pilar.marotta@example.com',history:[
+    {date:'2026-06-24',type:'Debit Card POS',merchant:'INTERNATIONAL ONLINE SHOP',amount:445.75},
+    {date:'2026-06-23',type:'Debit Card POS',merchant:'AIRPORT DUTY FREE',amount:120.40},
+    {date:'2026-06-22',type:'Credit Card',merchant:'HOTEL RESORT CHARGE',amount:980.00},
+    {date:'2026-06-21',type:'ACH Debit',merchant:'INSURANCE ACH',amount:210.15}
+  ]},
+  '555':{customer:'Jiya Uttam',accountAge:'Over 30 days',foreign:'No',deviceStatus:'Still in possession',prior:0,phone:'(305) 555-0555',email:'jiya.uttam@example.com',history:[
+    {date:'2026-06-24',type:'Credit Card',merchant:'ONLINE FURNITURE STORE',amount:620.00},
+    {date:'2026-06-22',type:'Debit Card POS',merchant:'BEAUTY SUPPLY MIAMI',amount:138.62},
+    {date:'2026-06-21',type:'Zelle / P2P',merchant:'Zelle to J. Patel',amount:80.00},
+    {date:'2026-06-20',type:'Check',merchant:'CHECK #1044',amount:350.00}
   ]}
 };
 let currentAccountHistory=[];
@@ -265,9 +295,9 @@ function loadAccountFromInput(showMessage){
   let profile=document.getElementById('accountProfileBox');
   if(!data){
     currentAccountHistory=[];
-    if(profile)profile.innerHTML='No demo account profile found for <strong>'+acct+'</strong>. Try 5550001234, 3928149002, 7741200381, or 6088123001.';
+    if(profile)profile.innerHTML='No demo account profile found for <strong>'+acct+'</strong>. Try 111, 222, 333, 444, 555, 5550001234, 3928149002, 7741200381, or 6088123001.';
     renderAccountHistory([],[]);
-    if(showMessage)alert('No demo account found. Try one of the seeded demo account numbers.');
+    if(showMessage)alert('No demo account found. Try 111, 222, 333, 444, 555, or one of the seeded demo account numbers.');
     liveCalc();return;
   }
   document.getElementById('customer').value=data.customer;
@@ -321,7 +351,7 @@ liveCalc=function(){
 };
 const originalResetNewCaseFormV40=resetNewCaseForm;
 resetNewCaseForm=function(){
-  let a=document.getElementById('account');if(a)a.value='5550001234';
+  let a=document.getElementById('account');if(a)a.value='111';
   let n=document.getElementById('noticeDate');if(n)n.value='2026-06-22';
   let st=document.getElementById('statement');if(st)st.value='Customer says they did not authorize the selected transaction(s).';
   setManualControls(null);loadAccountFromInput(false);setCaseTypeWorkflow();
@@ -368,9 +398,9 @@ const CLAIM_WORKFLOWS={
   'Debit Card POS':{
     defaultType:'Not authorized',
     guide:'Debit card selected. Choose the card dispute reason and select only debit card transactions.',
-    options:['Not authorized','Lost / stolen / card in possession','Price adjustment not on statement','Merchandise not received / defective','Participated but returned merchandise / canceled service'],
+    options:['Not authorized','Price adjustment not on statement','Merchandise not received / defective','Participated but returned merchandise / canceled service'],
     fields:function(type){
-      if(type==='Not authorized'||type==='Lost / stolen / card in possession')return '<div class="two"><div><label>Card status</label><select id="detailCardStatus" onchange="renderConditionalCardDate()"><option>Card still in possession</option><option>Lost card</option><option>Stolen card</option></select></div><div id="conditionalCardDate"></div></div>';
+      if(type==='Not authorized')return '<div class="two"><div><label>Card status</label><select id="detailCardStatus" onchange="renderConditionalCardDate()"><option>Card still in possession</option><option>Lost card</option><option>Stolen card</option></select></div><div id="conditionalCardDate"></div></div>';
       if(type==='Price adjustment not on statement')return '<div class="two"><div><label>Expected adjustment amount</label><input id="detailExpectedAdjustment" type="number" step="0.01" placeholder="0.00"></div><div><label>Merchant promised date</label><input id="detailMerchantPromisedDate" type="date"></div></div>';
       if(type==='Merchandise not received / defective')return '<div class="two"><div><label>Issue</label><select id="detailMerchIssue"><option>Merchandise not received</option><option>Defective merchandise</option><option>Wrong merchandise</option></select></div><div><label>Expected delivery / service date</label><input id="detailExpectedDate" type="date"></div></div>';
       return '<div class="two"><div><label>Customer action</label><select id="detailCustomerAction"><option>Returned merchandise</option><option>Canceled service</option><option>Attempted merchant resolution</option></select></div><div><label>Return / cancellation date</label><input id="detailCancelDate" type="date"></div></div>';
@@ -379,7 +409,7 @@ const CLAIM_WORKFLOWS={
   'Credit Card':{
     defaultType:'Not authorized',
     guide:'Credit card selected. This demo routes credit card disputes outside Reg E, but captures affidavit-style details.',
-    options:['Not authorized','Lost / stolen / card in possession','Price adjustment not on statement','Merchandise not received / defective','Participated but returned merchandise / canceled service'],
+    options:['Not authorized','Price adjustment not on statement','Merchandise not received / defective','Participated but returned merchandise / canceled service'],
     fields:function(type){return CLAIM_WORKFLOWS['Debit Card POS'].fields(type)}
   },
   'ACH Debit':{
